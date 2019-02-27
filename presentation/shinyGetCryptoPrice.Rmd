@@ -1,0 +1,62 @@
+---
+title: "Crytpocurrency Price Plotter"
+author: "Henrique Almeida"
+date: "26 de fevereiro de 2019"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,message = FALSE)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+source("../aux/functions.R")
+btc_price <- getBTCPrice()
+btc_price <- btc_price %>% 
+              filter(date >= Sys.Date()-months(1)) %>%
+              filter(date <= Sys.Date()-1)
+p <- ggplot(data = btc_price,aes(x=date,y=price)) + 
+              geom_line(col="blue") + 
+              ggtitle(paste0("Bitcoin price since ",min(btc_price$date),
+                             " to ",max(btc_price$date))) + 
+              xlab("Date") +
+              ylab("Price (USD)")
+```
+
+## Information
+
+This aplication allow users to select 3 cryptocurrencies (Bitcoin,Litecoin and Ethereum) price data to plot it in the user interface. Users can choose to get google trends data from the same cryptocurrency in order to plot the data just bellow the price chart.
+
+### Data Source
+
+- The bitcoin price data is from [https://data.bitcoinity.org](https://data.bitcoinity.org)
+- Litecoin and ethereum price relative to BTC are from [Poloniex](https://poloniex.com) and treated in the R Server in order to obtain the USD price for each cryptocurrency
+
+## Example of data ploted
+
+```{r echo=FALSE}
+p
+```
+
+## Example of function to get bitcoin price
+
+```{r echo=TRUE,message=FALSE}
+## BTC PRICE ##
+getBTCPrice <- function(){
+  btc_price <- read.csv(file = "https://data.bitcoinity.org/export_data.csv?currency=USD&data_type=price_volume&r=day&t=lb&timespan=5y&vu=curr",
+                        stringsAsFactors = FALSE)
+  btc_price$price_p <- btc_price$price/max(btc_price$price)*100
+  btc_price$date <- as.Date(btc_price$Time)
+  return(btc_price)
+}
+btc_price <- getBTCPrice()
+lastDate <- max(btc_price$date) 
+lastPrice <- (btc_price %>% filter(date==lastDate))$price
+print(paste0("BTC price (USS) at ",lastDate," : $",lastPrice))
+```
+
+## Link to aplication and github
+
+- Aplication link: [https://henrique1837.shinyapps.io/courseProject-DevDataProducts/](https://henrique1837.shinyapps.io/courseProject-DevDataProducts/)
+- Github repository: [https://github.com/henrique1837/CourseraDataScience-DevDataProducts](https://github.com/henrique1837/CourseraDataScience-DevDataProducts)
+
